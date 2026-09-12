@@ -123,41 +123,34 @@ def create_detection():
         status = "LOW_CONFIDENCE_REVIEW"
 
     detection = WasteDetection(
-        organization_id=data["organization_id"],
-        bin_id=data["bin_id"],
-        presentation_session_id=data.get(
-            "presentation_session_id"
-        ),
-        frame_reference_id=data.get(
-            "frame_reference_id"
-        ),
-        model_class=model_class,
-        confidence=confidence,
-        waste_stream=mapping["waste_stream"],
-        target_compartment=mapping["compartment"],
-        bounding_box=data.get("bounding_box"),
-        image_path=data.get("image_path"),
-        image_mime=data.get("image_mime"),
-        image_size_bytes=data.get("image_size_bytes"),
-        image_checksum=data.get("image_checksum"),
-        model_version=data.get(
-            "model_version",
-            "YOLOv8n"
-        ),
-        status=status
-    )
+    organization_id=data["organization_id"],
+    bin_id=data["bin_id"],
+    presentation_session_id=data.get("presentation_session_id"),
+    frame_reference_id=data.get("frame_reference_id"),
+    model_class=model_class,
+    confidence=confidence,
+    waste_stream=mapping["waste_stream"],
+    target_compartment=mapping["compartment"],
+    bounding_box=data.get("bounding_box"),
+    image_storage_path=data.get("image_path"),          # ← renamed
+    image_mime_type=data.get("image_mime", "image/jpeg"),# ← renamed
+    image_size_bytes=data.get("image_size_bytes"),
+    image_checksum_sha256=data.get("image_checksum"),    # ← renamed
+    model_version=data.get("model_version", "YOLOv8n"),
+    status=status
+)
 
     db.session.add(detection)
     db.session.commit()
 
     return jsonify({
-        "success": True,
-        "data": {
-            "detection_id": str(detection.detection_id),
-            "model_class": detection.model_class,
-            "confidence": float(detection.confidence),
-            "waste_stream": detection.waste_stream.value,
-            "target_compartment": detection.target_compartment,
-            "status": detection.status.value
-        }
-    }), 201
+    "success": True,
+    "data": {
+        "detection_id": str(detection.detection_id),
+        "model_class": detection.model_class,
+        "confidence": float(detection.confidence),
+        "waste_stream": detection.waste_stream,
+        "target_compartment": detection.target_compartment,
+        "status": detection.status
+    }
+}), 201
