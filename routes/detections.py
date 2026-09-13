@@ -153,4 +153,47 @@ def create_detection():
         "target_compartment": detection.target_compartment,
         "status": detection.status
     }
-}), 201
+}), 201  
+@detections_bp.get("")
+def get_detections():
+    detections = WasteDetection.query.order_by(WasteDetection.created_at.desc()).limit(50).all()
+
+    return jsonify({
+        "success": True,
+        "data": [
+            {
+                "detection_id": str(d.detection_id),
+                "bin_id": str(d.bin_id),
+                "model_class": d.model_class,
+                "confidence": float(d.confidence),
+                "waste_stream": d.waste_stream,
+                "status": d.status,
+                "created_at": d.created_at.isoformat() if d.created_at else None
+            }
+            for d in detections
+        ]
+    })
+
+
+@detections_bp.get("/<detection_id>")
+def get_detection_by_id(detection_id):
+    detection = WasteDetection.query.filter_by(detection_id=detection_id).first()
+
+    if not detection:
+        return jsonify({
+            "success": False,
+            "error": {"code": "NOT_FOUND", "message": "Detection not found"}
+        }), 404
+
+    return jsonify({
+        "success": True,
+        "data": {
+            "detection_id": str(detection.detection_id),
+            "bin_id": str(detection.bin_id),
+            "model_class": detection.model_class,
+            "confidence": float(detection.confidence),
+            "waste_stream": detection.waste_stream,
+            "status": detection.status,
+            "created_at": detection.created_at.isoformat() if detection.created_at else None
+        }
+    })
